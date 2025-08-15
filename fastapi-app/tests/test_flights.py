@@ -52,6 +52,7 @@ async def test_search_and_get_flight(flight_collection: AsyncIOMotorCollection) 
         "departure_time": datetime(2023, 1, 1, 10, 0, 0),
         "arrival_time": datetime(2023, 1, 1, 12, 0, 0),
         "price": 1500.0,
+        "seats": 1,
     }
     await flight_collection.insert_one(flight)
 

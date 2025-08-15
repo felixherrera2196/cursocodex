@@ -19,3 +19,8 @@ def get_user_collection() -> AsyncIOMotorCollection:
 def get_flight_collection() -> AsyncIOMotorCollection:
     """Return the MongoDB collection for flights."""
     return _db["flights"]
+
+
+def get_reservation_collection() -> AsyncIOMotorCollection:
+    """Return the MongoDB collection for reservations."""
+    return _db["reservations"]
