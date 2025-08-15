@@ -1,2 +1,9 @@
 fastapi
 uvicorn
+motor
+python-jose[cryptography]
+passlib[bcrypt]
+pytest
+pytest-asyncio
+httpx
+mongomock-motor
