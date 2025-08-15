@@ -20,3 +20,4 @@ def test_defaults_to_local(monkeypatch) -> None:
     importlib.reload(db)
     assert db.MONGO_URI == "mongodb://localhost:27017/app_db"
     assert db.get_user_collection().database.name == "app_db"
+

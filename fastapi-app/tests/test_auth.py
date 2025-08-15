@@ -1,10 +1,13 @@
 """Tests for authentication endpoints."""
+import os
 import sys
 from pathlib import Path
 
-import pytest
-from httpx import ASGITransport, AsyncClient
 import mongomock_motor
+import pytest
+import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
+from motor.motor_asyncio import AsyncIOMotorClient
 
 # Add fastapi-app directory to path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
@@ -13,14 +16,27 @@ from app.main import app  # noqa: E402
 from app.database import get_user_collection  # noqa: E402
 
 
-@pytest.fixture(autouse=True)
-def override_dependency():
-    """Override MongoDB dependency with an in-memory mock."""
-    client = mongomock_motor.AsyncMongoMockClient()
+@pytest_asyncio.fixture(autouse=True)
+async def override_dependency() -> None:
+    """Override MongoDB dependency with remote or mock collection."""
+    mongo_uri = os.getenv("MONGO_URI")
+    client = None
+    try:
+        if mongo_uri:
+            client = AsyncIOMotorClient(mongo_uri, serverSelectionTimeoutMS=2000)
+            await client.admin.command("ping")
+        else:
+            raise RuntimeError("Missing MONGO_URI")
+    except Exception:
+        client = mongomock_motor.AsyncMongoMockClient()
+
     collection = client["test_db"]["users"]
+    await collection.delete_many({})
     app.dependency_overrides[get_user_collection] = lambda: collection
     yield
+    await collection.delete_many({})
     app.dependency_overrides.clear()
+    client.close()
 
 
 @pytest.mark.asyncio
