@@ -1,6 +1,6 @@
 """Tests for reservation endpoints."""
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import mongomock_motor
@@ -88,3 +88,71 @@ async def test_reservation_flow(
         assert response.status_code == 200
         paid = response.json()
         assert paid["paid"] is True
+
+
+@pytest.mark.asyncio
+async def test_cancel_reservation(
+    setup_collections: tuple[AsyncIOMotorCollection, AsyncIOMotorCollection, AsyncIOMotorCollection]
+) -> None:
+    """Ensure a reservation can be cancelled more than 24 hours before departure."""
+    user_collection, flight_collection, _ = setup_collections
+    future_departure = datetime.utcnow() + timedelta(days=2)
+    await flight_collection.insert_one(
+        {
+            "_id": "CD456",
+            "origin": "MEX",
+            "destination": "CUN",
+            "departure_time": future_departure,
+            "arrival_time": future_departure + timedelta(hours=2),
+            "price": 2000.0,
+            "seats": 10,
+        }
+    )
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        await ac.post("/auth/register", json={"username": "alice", "password": "secret"})
+        login = await ac.post("/auth/login", json={"username": "alice", "password": "secret"})
+        token = login.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+        response = await ac.post("/reservations", json={"flight_id": "CD456"}, headers=headers)
+        assert response.status_code == 201
+        reservation_id = response.json()["id"]
+
+        response = await ac.delete(f"/reservations/{reservation_id}", headers=headers)
+        assert response.status_code == 204
+
+        response = await ac.get("/reservations", headers=headers)
+        assert response.status_code == 200
+        assert response.json() == []
+
+
+@pytest.mark.asyncio
+async def test_cannot_cancel_within_24_hours(
+    setup_collections: tuple[AsyncIOMotorCollection, AsyncIOMotorCollection, AsyncIOMotorCollection]
+) -> None:
+    """Ensure a reservation cannot be cancelled within 24 hours of departure."""
+    user_collection, flight_collection, _ = setup_collections
+    near_departure = datetime.utcnow() + timedelta(hours=10)
+    await flight_collection.insert_one(
+        {
+            "_id": "EF789",
+            "origin": "MEX",
+            "destination": "MTY",
+            "departure_time": near_departure,
+            "arrival_time": near_departure + timedelta(hours=1),
+            "price": 1000.0,
+            "seats": 5,
+        }
+    )
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        await ac.post("/auth/register", json={"username": "carl", "password": "secret"})
+        login = await ac.post("/auth/login", json={"username": "carl", "password": "secret"})
+        token = login.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+        response = await ac.post("/reservations", json={"flight_id": "EF789"}, headers=headers)
+        assert response.status_code == 201
+        reservation_id = response.json()["id"]
+
+        response = await ac.delete(f"/reservations/{reservation_id}", headers=headers)
+        assert response.status_code == 400
