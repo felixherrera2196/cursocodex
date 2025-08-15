@@ -42,3 +42,7 @@ class ReservationRepository:
     async def set_paid(self, reservation_id: str) -> None:
         """Mark a reservation as paid."""
         await self.collection.update_one({"_id": reservation_id}, {"$set": {"paid": True}})
+
+    async def delete(self, reservation_id: str) -> None:
+        """Remove a reservation from the database."""
+        await self.collection.delete_one({"_id": reservation_id})
