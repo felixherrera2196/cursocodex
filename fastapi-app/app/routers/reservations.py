@@ -12,8 +12,11 @@ from ..repositories.reservation_repository import ReservationRepository
 from ..schemas.reservation import Reservation, ReservationCreate
 from ..services.auth_service import ALGORITHM, SECRET_KEY
 from ..services.reservation_service import (
+    CancellationNotAllowedError,
     FlightNotFoundError,
     NoSeatsAvailableError,
+    ReservationNotFoundError,
+    cancel_reservation,
     create_reservation,
     list_reservations,
     pay_reservation,
@@ -96,3 +99,24 @@ async def pay(
     if not reservation_db:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reservation not found")
     return Reservation(**reservation_db.model_dump())
+
+
+@router.delete("/{reservation_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def cancel(
+    reservation_id: str,
+    username: str = Depends(get_current_username),
+    flight_repo: FlightRepository = Depends(get_flight_repo),
+    reservation_repo: ReservationRepository = Depends(get_reservation_repo),
+) -> None:
+    """Cancel a reservation for the current user."""
+    try:
+        await cancel_reservation(flight_repo, reservation_repo, reservation_id, username)
+    except ReservationNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reservation not found")
+    except CancellationNotAllowedError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cancellation allowed only more than 24 hours before departure",
+        )
+    except FlightNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Flight not found")
