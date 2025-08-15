@@ -11,3 +11,4 @@ class Flight(BaseModel):
     departure_time: datetime
     arrival_time: datetime
     price: float
+    seats: int
