@@ -14,3 +14,8 @@ _db = _client[_db_name]
 def get_user_collection() -> AsyncIOMotorCollection:
     """Return the MongoDB collection for users."""
     return _db["users"]
+
+
+def get_flight_collection() -> AsyncIOMotorCollection:
+    """Return the MongoDB collection for flights."""
+    return _db["flights"]

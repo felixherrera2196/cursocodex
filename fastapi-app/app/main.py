@@ -1,10 +1,11 @@
 """FastAPI application entry point."""
 from fastapi import FastAPI
 
-from .routers import auth
+from .routers import auth, flights
 
 app = FastAPI()
 app.include_router(auth.router)
+app.include_router(flights.router)
 
 
 @app.get("/")
