@@ -2,8 +2,8 @@
 import os
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
 
-MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
-_client = AsyncIOMotorClient(MONGODB_URI)
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+_client = AsyncIOMotorClient(MONGO_URI)
 _db = _client["app_db"]
 
 
