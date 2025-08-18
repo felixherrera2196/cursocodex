@@ -15,9 +15,28 @@ Requiere Python 3.11+ y las dependencias listadas en `fastapi-app/requirements.t
 pip install -r fastapi-app/requirements.txt
 ```
 
+## Ejecutar la aplicación
+
+Para iniciar el servidor de desarrollo:
+
+```bash
+cd fastapi-app
+uvicorn app.main:app --reload
+```
+
+La API estará disponible en [http://127.0.0.1:8000](http://127.0.0.1:8000) y la documentación interactiva en [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+
 ## Ejecutar pruebas
 
 ```bash
 python -m pytest
 ```
+
+## Contribuir
+
+Las contribuciones son bienvenidas. Para proponer cambios:
+
+1. Crea un fork del repositorio y una rama para tu aporte.
+2. Ejecuta las pruebas con `python -m pytest` y asegúrate de que todas pasen.
+3. Abre un Pull Request describiendo tu cambio.
 
