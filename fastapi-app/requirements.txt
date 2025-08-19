@@ -4,6 +4,7 @@ motor
 python-jose[cryptography]
 passlib[bcrypt]
 pytest
+pytest-cov
 pytest-asyncio
 httpx
 mongomock-motor
