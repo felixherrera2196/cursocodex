@@ -6,7 +6,7 @@ from ..models.flight import FlightInDB
 
 
 class FlightRepository:
-    """Repository for flight read operations."""
+    """Repository for flight operations."""
 
     def __init__(self, collection: AsyncIOMotorCollection) -> None:
         self.collection = collection
@@ -27,3 +27,10 @@ class FlightRepository:
             document["id"] = document.pop("_id")
             return FlightInDB(**document)
         return None
+
+    async def create(self, flight: FlightInDB) -> str:
+        """Insert a new flight and return its identifier."""
+        document = flight.model_dump()
+        document["_id"] = document.pop("id")
+        await self.collection.insert_one(document)
+        return flight.id

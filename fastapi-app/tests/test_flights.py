@@ -74,6 +74,28 @@ async def test_search_and_get_flight(flight_collection: AsyncIOMotorCollection) 
 
 
 @pytest.mark.asyncio
+async def test_create_flight(flight_collection: AsyncIOMotorCollection) -> None:
+    """Ensure a flight can be created via the API."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        payload = {
+            "id": "XY789",
+            "origin": "MEX",
+            "destination": "CUN",
+            "departure_time": datetime(2023, 2, 1, 10, 0, 0).isoformat(),
+            "arrival_time": datetime(2023, 2, 1, 12, 0, 0).isoformat(),
+            "price": 2500.0,
+            "seats": 100,
+        }
+        response = await ac.post("/flights", json=payload)
+        assert response.status_code == status.HTTP_201_CREATED
+        data = response.json()
+        assert data["id"] == "XY789"
+        stored = await flight_collection.find_one({"_id": "XY789"})
+        assert stored is not None
+
+
+@pytest.mark.asyncio
 async def test_search_returns_empty_list(
     flight_collection: AsyncIOMotorCollection,
 ) -> None:
