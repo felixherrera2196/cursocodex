@@ -156,3 +156,20 @@ async def test_cannot_cancel_within_24_hours(
 
         response = await ac.delete(f"/reservations/{reservation_id}", headers=headers)
         assert response.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_access_with_invalid_token_returns_401(
+    setup_collections: tuple[
+        AsyncIOMotorCollection,
+        AsyncIOMotorCollection,
+        AsyncIOMotorCollection,
+    ]
+) -> None:
+    """Ensure accessing reservations with an invalid token returns 401."""
+    _ = setup_collections
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = {"Authorization": "Bearer invalidtoken"}
+        response = await ac.get("/reservations", headers=headers)
+        assert response.status_code == 401
