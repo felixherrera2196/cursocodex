@@ -156,3 +156,6 @@ async def test_cannot_cancel_within_24_hours(
 
         response = await ac.delete(f"/reservations/{reservation_id}", headers=headers)
         assert response.status_code == 400
+
+
+
