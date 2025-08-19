@@ -7,6 +7,7 @@ from pathlib import Path
 import mongomock_motor
 import pytest
 import pytest_asyncio
+from fastapi import status
 from httpx import ASGITransport, AsyncClient
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
 
@@ -70,3 +71,29 @@ async def test_search_and_get_flight(flight_collection: AsyncIOMotorCollection) 
         detail = response.json()
         assert detail["origin"] == "MEX"
         assert detail["destination"] == "GDL"
+
+
+@pytest.mark.asyncio
+async def test_search_returns_empty_list(
+    flight_collection: AsyncIOMotorCollection,
+) -> None:
+    """Ensure searching with no matching flights returns an empty list."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.get(
+            "/flights", params={"origin": "AAA", "destination": "BBB"}
+        )
+        assert response.status_code == 200
+        assert response.json() == []
+
+
+@pytest.mark.asyncio
+async def test_get_nonexistent_flight_returns_404(
+    flight_collection: AsyncIOMotorCollection,
+) -> None:
+    """Ensure retrieving a non-existent flight returns 404."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.get("/flights/UNKNOWN")
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.json()["detail"] == "Flight not found"

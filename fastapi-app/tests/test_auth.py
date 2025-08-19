@@ -6,6 +6,7 @@ from pathlib import Path
 import mongomock_motor
 import pytest
 import pytest_asyncio
+from fastapi import status
 from httpx import ASGITransport, AsyncClient
 from motor.motor_asyncio import AsyncIOMotorClient
 
@@ -53,3 +54,31 @@ async def test_register_and_login() -> None:
         data = response.json()
         assert "access_token" in data
         assert data["token_type"] == "bearer"
+
+
+@pytest.mark.asyncio
+async def test_register_existing_user_returns_400() -> None:
+    """Registering an existing user should fail with a 400 status."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        payload = {"username": "bob", "password": "secret"}
+        response = await ac.post("/auth/register", json=payload)
+        assert response.status_code == status.HTTP_200_OK
+
+        response = await ac.post("/auth/register", json=payload)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.asyncio
+async def test_login_invalid_password_returns_401() -> None:
+    """Logging in with an invalid password should return a 401 status."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        payload = {"username": "carol", "password": "correct"}
+        response = await ac.post("/auth/register", json=payload)
+        assert response.status_code == status.HTTP_200_OK
+
+        response = await ac.post(
+            "/auth/login", json={"username": "carol", "password": "wrong"}
+        )
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
