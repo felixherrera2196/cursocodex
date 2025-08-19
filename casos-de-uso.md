@@ -68,10 +68,10 @@ A continuación se describen los principales casos de uso del sistema, derivados
 
 **Flujo principal:**
 1. El administrador accede al módulo de gestión de vuelos.
-2. El administrador crea o edita información de un vuelo.
+2. El administrador registra un nuevo vuelo proporcionando código, origen, destino, horarios, precio y capacidad mediante el endpoint `/flights`.
 3. El sistema almacena los cambios realizados.
 
-**Postcondiciones:** El vuelo es creado o actualizado en el sistema.
+**Postcondiciones:** El vuelo queda disponible para búsquedas y reservas.
 
 ## CU7. Registro e inicio de sesión
 **Actor principal:** Usuario

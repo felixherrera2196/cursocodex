@@ -10,7 +10,7 @@ from pydantic import ValidationError
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from app.schemas.user import UserCreate  # noqa: E402
-from app.schemas.flight import Flight  # noqa: E402
+from app.schemas.flight import Flight, FlightCreate  # noqa: E402
 from app.schemas.reservation import Reservation  # noqa: E402
 
 
@@ -53,6 +53,34 @@ def test_flight_validation_error(data: dict) -> None:
     """Invalid flight data should raise a ValidationError."""
     with pytest.raises(ValidationError):
         Flight(**data)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        {
+            "id": "FL1",
+            "origin": "A",
+            "destination": "B",
+            "arrival_time": datetime.now(),
+            "price": 100.0,
+            "seats": 50,
+        },  # missing departure_time
+        {
+            "id": "FL1",
+            "origin": "A",
+            "destination": "B",
+            "departure_time": datetime.now(),
+            "arrival_time": datetime.now(),
+            "price": 100.0,
+            "seats": "many",
+        },  # invalid seats type
+    ],
+)
+def test_flight_create_validation_error(data: dict) -> None:
+    """Invalid flight creation data should raise a ValidationError."""
+    with pytest.raises(ValidationError):
+        FlightCreate(**data)
 
 
 @pytest.mark.parametrize(
