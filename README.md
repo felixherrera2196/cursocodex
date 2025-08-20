@@ -7,6 +7,18 @@ Repositorio del curso Codex. Incluye documentación de análisis, diagramas de a
 - `fastapi-app/`: código de la API y pruebas automatizadas.
 - Documentos Markdown: casos de uso, requisitos, diagramas y plan de sprints.
 
+## Documentos de análisis y diagramas
+
+- [Casos de uso](casos-de-uso.md)
+- [Requerimientos funcionales](requerimientos-funcionales.md)
+- [Requerimientos no funcionales](requerimientos-no-funcionales.md)
+- [Diagramas de flujo](diagramas-flujo.md)
+- [Diagramas de secuencia](diagramas-secuencia.md)
+- [Diagrama de componentes](diagrama-componentes.md)
+- [Arquitectura monolítica](arquitectura-monolitica.md)
+- [Plan de sprints](plan-de-sprints.md)
+- [Diagrama base de datos](diagrama-base-de-datos.md)
+
 ## Requisitos
 
 Requiere Python 3.11+ y las dependencias listadas en `fastapi-app/requirements.txt`:
